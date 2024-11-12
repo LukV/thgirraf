@@ -1,7 +1,7 @@
 # Added LVE
 *.db
 *.mock.png
-secrets/firebaseAccountKey.json
+backend/secrets/
 
 # General
 *.log
