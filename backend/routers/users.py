@@ -6,7 +6,18 @@ from ..crud import users as crud_users
 from ..core import auth
 from ..db.database import get_db
 
+
 router = APIRouter()
+
+@router.get("/me", response_model=user_schemas.UserResponse)
+def read_current_user(current_user: user_schemas.UserResponse = Depends(crud_users.get_current_user)):
+    """
+    Retrieves the currently authenticated user.
+
+    Returns:
+        UserResponse: The current user's data.
+    """
+    return current_user
 
 @router.post("/", response_model=user_schemas.UserResponse)
 def create_user(user: user_schemas.UserCreate, db: Session = Depends(get_db)):

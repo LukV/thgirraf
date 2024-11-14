@@ -83,6 +83,10 @@ body, html {
     text-align: center;
 }
 
+.overlay, .auth-overlay p {
+    margin: 10px 0;
+}
+
 .overlay a {
     color: black;
     font-size: 24px;
@@ -102,14 +106,10 @@ body, html {
     cursor: pointer;
 }
 
-h2 {
+.overlay, .auth-overlay h2 {
     font-size: 22px;
-    margin-bottom: 16px;
     color: #5052C0;
-}
-
-p {
-    margin: 10px 0;
+    margin-bottom: 16px;
 }
 
 a {

@@ -1,19 +1,24 @@
 import os
+from pathlib import Path
 from datetime import datetime, timedelta, timezone
 from passlib.context import CryptContext
 from firebase_admin import auth as firebase_auth
 from fastapi import HTTPException, status
+from fastapi.security import OAuth2PasswordBearer
 from jose import jwt
 from dotenv import load_dotenv
 
-load_dotenv()
+env_path = Path(__file__).resolve().parent / ".env"
+load_dotenv(dotenv_path=env_path)
 
-SECRET_KEY = os.getenv("SECRET_KEY")
+SECRET_KEY = os.getenv("SECRET_KEY").encode()
 ALGORITHM = os.getenv("ALGORITHM", "HS256")  # Default to HS256 if not set
 ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "60"))
 REFRESH_TOKEN_EXPIRE_DAYS = int(os.getenv("REFRESH_TOKEN_EXPIRE_DAYS", "7"))
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/login")
 
 def hash_password(password: str) -> str:
     """Hashes a password using bcrypt."""

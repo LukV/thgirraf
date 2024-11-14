@@ -16,8 +16,9 @@
 </template>
 
 <script>
-import { getAuth, createUserWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
-import { getFirestore, doc, setDoc, serverTimestamp } from 'firebase/firestore';
+import { mapActions } from 'vuex';
+import apiClient from '@/apiClient';
+import { getAuth, GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
 
 export default {
   data() {
@@ -28,54 +29,49 @@ export default {
     };
   },
   methods: {
-    signUp() {
-      const auth = getAuth();
-      const db = getFirestore();
-
-      createUserWithEmailAndPassword(auth, this.email, this.password)
-        .then((userCredential) => {
-          const user = userCredential.user;
-          // Update profile with username
-          user.updateProfile({
-            displayName: this.username,
-          });
-
-          // Save additional user data to Firestore
-          setDoc(doc(db, 'users', user.uid), {
-            email: this.email,
-            username: this.username,
-            dateCreated: serverTimestamp(),
-          });
-          this.$emit('auth-success', user);
-        })
-        .catch((error) => {
-          console.error(error);
-          // Handle errors (e.g., display error message)
+    ...mapActions(['login']),
+    async signUp() {
+      try {
+        // Create a new user in the backend
+        await apiClient.post('/users/', {
+          email: this.email,
+          username: this.username,
+          password: this.password,
         });
+
+        // Log the user in via Vuex action
+        await this.login({
+          username: this.username,
+          password: this.password,
+        });
+
+        // Emit success event to close overlay
+        this.$emit('auth-success');
+      } catch (error) {
+        console.error(error);
+        // Handle errors
+      }
     },
-    signInWithGoogle() {
+    async signInWithGoogle() {
       const auth = getAuth();
-      const db = getFirestore();
       const provider = new GoogleAuthProvider();
 
-      signInWithPopup(auth, provider)
-        .then((result) => {
-          const user = result.user;
-          // Optionally save user data to Firestore
-          setDoc(
-            doc(db, 'users', user.uid),
-            {
-              email: user.email,
-              username: user.displayName,
-              dateCreated: serverTimestamp(),
-            },
-            { merge: true }
-          );
-          this.$emit('auth-success', user);
-        })
-        .catch((error) => {
-          console.error(error);
+      try {
+        const result = await signInWithPopup(auth, provider);
+        const user = result.user;
+        const idToken = await user.getIdToken();
+
+        // Log the user in via Vuex action
+        await this.login({
+          token: idToken,
         });
+
+        // Emit success event to close overlay
+        this.$emit('auth-success');
+      } catch (error) {
+        console.error(error);
+        // Handle errors
+      }
     },
     switchToLogin() {
       this.$emit('switch-mode', 'login');

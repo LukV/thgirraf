@@ -1,8 +1,11 @@
 from typing import Optional, List
+from fastapi import Depends, HTTPException, status
 from sqlalchemy.orm import Session
-from ..db import models
+from jose import JWTError, jwt
+from ..db import models, get_db
 from ..schemas import users as user_schemas
 from ..core import auth
+from ..core.auth import oauth2_scheme, SECRET_KEY, ALGORITHM
 
 def create_user(db: Session,
                 user: user_schemas.UserCreate,
@@ -23,6 +26,7 @@ def create_user(db: Session,
         username=user.username,
         email=user.email,
         password=hashed_password,
+        icon=user.icon,
         google_login=google_login
     )
     db.add(db_user)
@@ -30,9 +34,10 @@ def create_user(db: Session,
     db.refresh(db_user)
     return db_user
 
-def update_user(db: Session,
-                user_id: int,
-                user_update: user_schemas.UserUpdate) -> Optional[models.User]:
+def update_user(
+        db: Session,
+        user_id: int,
+        user_update: user_schemas.UserUpdate) -> Optional[models.User]:
     """
     Updates an existing user's details in the database.
 
@@ -44,10 +49,15 @@ def update_user(db: Session,
     Returns:
         User or None: The updated user instance or None if not found.
     """
+    # Retrieve the user from the database
     db_user = db.query(models.User).filter(models.User.id == user_id).first()
     if db_user:
-        for key, value in user_update.dict(exclude_unset=True).items():
+        # Use model_dump(exclude_unset=True) to include only provided fields
+        update_data = user_update.model_dump(exclude_unset=True)
+        for key, value in update_data.items():
             setattr(db_user, key, value)
+
+        # Commit the changes to the database
         db.commit()
         db.refresh(db_user)
     return db_user
@@ -68,6 +78,46 @@ def delete_user(db: Session, user_id: int) -> Optional[models.User]:
         db.delete(db_user)
         db.commit()
     return db_user
+
+def get_current_user(
+    token: str = Depends(oauth2_scheme),
+    db: Session = Depends(get_db)
+):
+    """
+    Retrieves the current user based on the provided JWT access token.
+
+    Args:
+        token (str): JWT access token from the Authorization header.
+        db (Session): Database session dependency.
+
+    Raises:
+        HTTPException: If the token is invalid or user is not found.
+
+    Returns:
+        models.User: The current authenticated user.
+    """
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        email = payload.get("sub")
+        if email is None:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid token: missing email",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
+        user = get_user_by_email(db, email)
+        if user is None:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="User not found",
+            )
+        return user
+    except JWTError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid token",
+            headers={"WWW-Authenticate": "Bearer"},
+        ) from exc
 
 def get_user_by_username(db: Session, username: str) -> Optional[models.User]:
     """

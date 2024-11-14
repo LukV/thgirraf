@@ -1,89 +1,88 @@
 <template>
     <div class="header">
-        <div>
-            <div class="menu-icon" @click="$emit('toggle-overlay')">
-                <i class="fas fa-bars"></i>
-            </div>
+      <div>
+        <div class="menu-icon" @click="$emit('toggle-overlay')">
+          <i class="fas fa-bars"></i>
         </div>
-        <div class="logo">
-            <img src="@/assets/images/logo.png" alt="Logo" />
-            <div class="logo-title">
-                <span>The</span>
-                <span>Standout</span>
-            </div>
+      </div>
+      <div class="logo">
+        <img src="@/assets/images/logo.png" alt="Logo" />
+        <div class="logo-title">
+          <span>The</span>
+          <span>Standout</span>
         </div>
-        <div class="header-right">
-            <a href="#" v-if="!user" @click.prevent="showSignUp">Sign up</a>
-            <button v-if="!user" @click="showLogin">Login</button>
-            <div v-else class="user-info">
-                <span>Welcome, {{ user.displayName || user.email }}</span>
-                <button @click="logout">Logout</button>
-            </div>
-            <div class="search-container">
-                <input type="text" class="search-input" v-model="searchQuery" />
-                <span class="search-icon"><i class="fas fa-search"></i></span>
-            </div>
+      </div>
+      <div class="header-right">
+        <a href="#" v-if="!isAuthenticated" @click.prevent="showSignUp">Sign up</a>
+        <button v-if="!isAuthenticated" @click="showLogin">Login</button>
+        <div v-else class="user-info">
+          <span v-if="user">Welcome, {{ user.username }}</span> <!-- Add v-if="user" check here -->
+          <button @click="logout">Logout</button>
         </div>
-
-        <!-- Authentication Overlay -->
-        <AuthOverlay v-if="authOverlayVisible" :mode="authMode" @close="closeAuthOverlay" />
+        <div class="search-container">
+          <input type="text" class="search-input" v-model="searchQuery" />
+          <span class="search-icon"><i class="fas fa-search"></i></span>
+        </div>
+      </div>
+  
+      <!-- Authentication Overlay -->
+      <AuthOverlay v-if="authOverlayVisible" :mode="authMode" @close="closeAuthOverlay"
+                   @auth-success="handleAuthSuccess" />
     </div>
-</template>
-
-<script>
-import AuthOverlay from './AuthOverlay.vue';
-import { auth } from '@/firebase';
-
-export default {
+  </template>
+  
+  <script>
+  import AuthOverlay from './AuthOverlay.vue';
+  import { mapState, mapGetters, mapActions } from 'vuex';
+  
+  export default {
     components: {
-        AuthOverlay,
+      AuthOverlay,
     },
     data() {
-        return {
-            searchQuery: '',
-            authOverlayVisible: false,
-            authMode: 'login', // 'login' or 'signup'
-            user: null,
-        };
+      return {
+        searchQuery: '',
+        authOverlayVisible: false,
+        authMode: 'login', // 'login' or 'signup'
+      };
     },
-    created() {
-        auth.onAuthStateChanged((user) => {
-            this.user = user;
-        });
+    computed: {
+      ...mapState(['user']),
+      ...mapGetters(['isAuthenticated']),
     },
     methods: {
-        showSignUp() {
-            this.authMode = 'signup';
-            this.authOverlayVisible = true;
-        },
-        showLogin() {
-            this.authMode = 'login';
-            this.authOverlayVisible = true;
-        },
-        closeAuthOverlay() {
-            this.authOverlayVisible = false;
-        },
-        logout() {
-            auth.signOut();
-        },
+      ...mapActions(['logout']),
+      showSignUp() {
+        this.authMode = 'signup';
+        this.authOverlayVisible = true;
+      },
+      showLogin() {
+        this.authMode = 'login';
+        this.authOverlayVisible = true;
+      },
+      closeAuthOverlay() {
+        this.authOverlayVisible = false;
+      },
+      handleAuthSuccess() {
+        this.authOverlayVisible = false;
+      },
     },
-};
-</script>
+  };
+  </script>
+  
+
 
 <style scoped>
 .header {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    /* Center the logo horizontally */
     height: 100px;
-    /* Define a height for the header to add vertical space */
     position: relative;
     padding: 0 20px;
     border-bottom: 1px solid #ddd;
 }
 
-/* Logo */
 .logo {
     display: flex;
     align-items: center;
@@ -94,7 +93,6 @@ export default {
 
 .logo img {
     height: 70px;
-    /* Adjust the size as needed */
 }
 
 .logo-title {
@@ -110,7 +108,6 @@ export default {
     display: block;
 }
 
-/* Right section for Sign up, Login, and Search */
 .header-right {
     display: flex;
     align-items: center;
@@ -182,7 +179,6 @@ export default {
 }
 
 
-/* Responsive styles */
 @media (max-width: 900px) {
     .header-right {
         display: none;
