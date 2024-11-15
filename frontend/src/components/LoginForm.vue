@@ -6,13 +6,18 @@
     </button>
     <p>- or -</p>
     <h2>Log in with e-mail</h2>
-    <form @submit.prevent="loginUser"> <!-- Change here to loginUser -->
+    <form @submit.prevent="loginUser">
       <input type="email" v-model="email" placeholder="Email" required />
       <input type="password" v-model="password" placeholder="Password" required />
       <button type="submit" class="submit-button">Log in</button>
     </form>
-    <p><a href="#" @click.prevent="switchToReset">Forgot Password?</a></p>
-    <p>Don’t have an account? <a href="#" @click.prevent="switchToSignUp">Sign up</a></p>
+    <p>
+      <router-link to="/request-password-reset">Forgot Password?</router-link>
+    </p>
+    <p>
+      Don’t have an account? 
+      <router-link to="/signup">Sign up</router-link>
+    </p>
   </div>
 </template>
 
@@ -29,13 +34,13 @@ export default {
   },
   methods: {
     ...mapActions(['login']),
-    async loginUser() { 
+    async loginUser() {
       try {
         await this.login({
           username: this.email,
           password: this.password,
         });
-        this.$emit('auth-success');
+        this.$emit('auth-success'); // Emit success event to close overlay
       } catch (error) {
         console.error(error);
         // TODO: Handle errors
@@ -54,18 +59,13 @@ export default {
           token: idToken,
         });
 
-        this.$emit('auth-success');
+        this.$emit('auth-success'); // Emit success event to close overlay
       } catch (error) {
         console.error(error);
         // TODO: Handle errors
       }
     },
-    switchToReset() {
-      this.$emit('switch-mode', 'reset');
-    },
-    switchToSignUp() {
-      this.$emit('switch-mode', 'signup');
-    },
   },
 };
 </script>
+

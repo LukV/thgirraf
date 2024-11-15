@@ -2,6 +2,14 @@ from typing import Optional
 from datetime import datetime
 from pydantic import BaseModel, EmailStr
 
+class PasswordResetRequest(BaseModel):
+    email: EmailStr
+
+class PasswordReset(BaseModel):
+    email: EmailStr
+    new_password: str
+    token: str
+
 class UserCreate(BaseModel):
     username: str
     email: EmailStr
@@ -15,10 +23,11 @@ class UserUpdate(BaseModel):
 
 class UserResponse(BaseModel):
     id: int
+    uid: str
     username: str
     email: EmailStr
     icon: Optional[str]
     date_created: datetime
 
     class Config:
-        orm_mode = True
+        from_attributes = True

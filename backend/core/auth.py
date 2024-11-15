@@ -70,3 +70,8 @@ def create_refresh_token(data: dict) -> str:
     expire = datetime.now(timezone.utc) + timedelta(days=REFRESH_TOKEN_EXPIRE_DAYS)
     to_encode.update({"exp": expire})
     return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+
+def create_password_reset_token(user_id: int):
+    expires = datetime.utcnow() + timedelta(hours=1)  # Token expires in 1 hour
+    to_encode = {"exp": expires, "sub": str(user_id)}
+    return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)

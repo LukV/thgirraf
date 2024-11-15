@@ -1,7 +1,10 @@
 from fastapi import FastAPI
+from .core.thlogging import configure_logging
 from .core.config import setup_cors
 from .routers import users, auth
 from .db import Base, engine
+
+configure_logging()
 
 app = FastAPI()
 

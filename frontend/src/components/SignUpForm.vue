@@ -11,7 +11,7 @@
     <button @click="signInWithGoogle" class="google-button">
       <i class="fab fa-google"></i> Sign Up with Google
     </button>
-    <p>Already have an account? <a href="#" @click.prevent="switchToLogin">Login</a></p>
+    <p>Already have an account? <router-link to="/login">Back to Login</router-link></p>
   </div>
 </template>
 
@@ -72,9 +72,6 @@ export default {
         console.error(error);
         // Handle errors
       }
-    },
-    switchToLogin() {
-      this.$emit('switch-mode', 'login');
     },
   },
 };

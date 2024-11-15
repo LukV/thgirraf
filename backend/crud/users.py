@@ -2,6 +2,7 @@ from typing import Optional, List
 from fastapi import Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from jose import JWTError, jwt
+import ulid
 from ..db import models, get_db
 from ..schemas import users as user_schemas
 from ..core import auth
@@ -22,8 +23,10 @@ def create_user(db: Session,
         User: The created user instance.
     """
     hashed_password = auth.hash_password(user.password) if user.password else None
+    uid = str(ulid.new())
     db_user = models.User(
         username=user.username,
+        uid=uid,
         email=user.email,
         password=hashed_password,
         icon=user.icon,
@@ -131,6 +134,19 @@ def get_user_by_username(db: Session, username: str) -> Optional[models.User]:
         User or None: The fetched user or None if not found.
     """
     return db.query(models.User).filter(models.User.username == username).first()
+
+def get_user_by_uid(db: Session, uid: str) -> Optional[models.User]:
+    """
+    Fetches a user by their uid.
+
+    Args:
+        db (Session): The database session.
+        uid (str): The uid of the user.
+
+    Returns:
+        User or None: The fetched user or None if not found.
+    """
+    return db.query(models.User).filter(models.User.uid == uid).first()
 
 def get_user_by_email(db: Session, email: str) -> Optional[models.User]:
     """

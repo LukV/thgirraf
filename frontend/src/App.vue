@@ -1,9 +1,14 @@
 <template>
-    <HeaderBar @toggle-overlay="toggleOverlay" />
-    <NavBar />
-    <MainContent />
-    <PostFooter />
-    <OverlayMenu v-if="overlayVisible" @toggle-overlay="toggleOverlay" />
+  <HeaderBar @toggle-overlay="toggleOverlay" />
+  <NavBar />
+  <MainContent v-if="!showAuthOverlay" />
+  <PostFooter v-if="!showAuthOverlay" />
+  <AuthOverlay
+    v-if="showAuthOverlay"
+    :mode="authMode"
+    @close="closeAuthOverlay"
+  />
+  <OverlayMenu v-if="overlayVisible" @toggle-overlay="toggleOverlay" />
 </template>
 
 <script>
@@ -12,6 +17,15 @@ import NavBar from "./components/NavBar.vue";
 import MainContent from "./components/MainContent.vue";
 import PostFooter from "./components/PostFooter.vue";
 import OverlayMenu from "./components/OverlayMenu.vue";
+import AuthOverlay from "./components/AuthOverlay.vue";
+
+// Map route names to modes
+const AUTH_ROUTES = {
+  Login: "login",
+  SignUp: "signup",
+  RequestPasswordReset: "request-reset",
+  ResetPassword: "reset",
+};
 
 export default {
   components: {
@@ -19,18 +33,30 @@ export default {
     NavBar,
     MainContent,
     PostFooter,
-    OverlayMenu
+    OverlayMenu,
+    AuthOverlay,
   },
   data() {
     return {
-      overlayVisible: false
+      overlayVisible: false,
     };
+  },
+  computed: {
+    showAuthOverlay() {
+      return Object.keys(AUTH_ROUTES).includes(this.$route.name);
+    },
+    authMode() {
+      return AUTH_ROUTES[this.$route.name] || null;
+    },
   },
   methods: {
     toggleOverlay() {
       this.overlayVisible = !this.overlayVisible;
-    }
-  }
+    },
+    closeAuthOverlay() {
+      this.$router.push("/"); // Redirect to home when overlay is closed
+    },
+  },
 };
 </script>
 
