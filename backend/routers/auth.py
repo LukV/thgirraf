@@ -30,7 +30,9 @@ def login(
         google_picture_url = google_user_data.get("picture")
 
         if not user:
-            icon_path = download_user_icon(google_picture_url, google_user_data["uid"]) if google_picture_url else None
+            icon_path = download_user_icon(google_picture_url,
+                                           google_user_data["uid"]) \
+                                            if google_picture_url else None
             new_user_data = UserCreate(
                 username=google_user_data["name"],
                 email=google_user_data["email"],

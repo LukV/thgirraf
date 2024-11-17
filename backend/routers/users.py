@@ -119,4 +119,3 @@ def reset_password(
     user.password = auth.hash_password(payload.new_password)
     db.commit()
     return {"message": "Password reset successfully"}
-
