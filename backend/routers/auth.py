@@ -2,6 +2,7 @@ from fastapi import APIRouter, HTTPException, Depends
 from sqlalchemy.orm import Session
 from jose import JWTError, jwt
 from ..core import auth
+from ..core.utils import download_user_icon
 from ..crud import users as crud_users
 from ..db.database import get_db
 from ..schemas.users import UserCreate
@@ -16,10 +17,6 @@ def login(
 ):
     """Endpoint for user login with either Firebase token or credentials.
 
-    Args:
-        login_data (LoginRequest): The login request data with username, password, or token.
-        db (Session, optional): Database session.
-
     Raises:
         HTTPException: 400 error if login credentials are missing.
         HTTPException: 400 error if credentials are invalid.
@@ -30,13 +27,14 @@ def login(
     if login_data.token:  # Google login
         google_user_data = auth.verify_firebase_token(login_data.token)
         user = crud_users.get_user_by_email(db, google_user_data["email"])
+        google_picture_url = google_user_data.get("picture")
 
         if not user:
-            # Register new Google user if they don’t exist in the database
+            icon_path = download_user_icon(google_picture_url, google_user_data["uid"]) if google_picture_url else None
             new_user_data = UserCreate(
                 username=google_user_data["name"],
                 email=google_user_data["email"],
-                icon=google_user_data.get("picture")
+                icon=icon_path
             )
             user = crud_users.create_user(db, user=new_user_data, google_login=True)
 

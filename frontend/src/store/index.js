@@ -8,10 +8,12 @@ const store = createStore({
     user: null,
     accessToken: localStorage.getItem('accessToken') || null,
     refreshToken: localStorage.getItem('refreshToken') || null,
+    authStatus: 'pending', // 'pending', 'authenticated', 'unauthenticated'
   },
   mutations: {
     SET_USER(state, user) {
       state.user = user;
+      state.authStatus = 'authenticated';
     },
     SET_TOKENS(state, tokens) {
       state.accessToken = tokens.access_token;
@@ -23,11 +25,25 @@ const store = createStore({
       state.user = null;
       state.accessToken = null;
       state.refreshToken = null;
+      state.authStatus = 'unauthenticated';
       localStorage.removeItem('accessToken');
       localStorage.removeItem('refreshToken');
     },
   },
   actions: {
+    async restoreAuth({ commit }) {
+      if (localStorage.getItem('accessToken')) {
+        try {
+          const userResponse = await apiClient.get('/users/me');
+          commit('SET_USER', userResponse.data);
+        } catch (error) {
+          console.error("Failed to restore user session", error);
+          commit('CLEAR_AUTH');
+        }
+      } else {
+        commit('CLEAR_AUTH');
+      }
+    },
     fetchUser({ commit }, user) {
       commit('SET_USER', user);
     },
@@ -38,28 +54,18 @@ const store = createStore({
       try {
         const response = await axios.post('/auth/login', credentials);
         commit('SET_TOKENS', response.data);
-
+  
         // Fetch user data using the access token
         const userResponse = await apiClient.get('/users/me');
         commit('SET_USER', userResponse.data);
       } catch (error) {
         console.error(error);
+        commit('CLEAR_AUTH');
         throw error;
       }
     },
     logout({ commit }) {
       commit('CLEAR_AUTH');
-    },
-    async restoreAuth({ commit }) {
-      if (localStorage.getItem('accessToken')) {
-        try {
-          const userResponse = await apiClient.get('/users/me');
-          commit('SET_USER', userResponse.data);
-        } catch (error) {
-          console.error("Failed to restore user session", error);
-          commit('CLEAR_AUTH');
-        }
-      }
     },
     async requestPasswordReset(_, payload) {
       try {
@@ -83,7 +89,7 @@ const store = createStore({
     },
   },
   getters: {
-    isAuthenticated: (state) => !!state.accessToken,
+    isAuthenticated: (state) => state.authStatus === 'authenticated',
     getUser: (state) => state.user,
   },
 });

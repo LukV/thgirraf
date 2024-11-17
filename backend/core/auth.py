@@ -8,8 +8,8 @@ from fastapi.security import OAuth2PasswordBearer
 from jose import jwt
 from dotenv import load_dotenv
 
-env_path = Path(__file__).resolve().parent / ".env"
-load_dotenv(dotenv_path=env_path)
+env_path = Path(__file__).resolve().parent.parent / ".env"
+load_dotenv(env_path)
 
 SECRET_KEY = os.getenv("SECRET_KEY").encode()
 ALGORITHM = os.getenv("ALGORITHM", "HS256")  # Default to HS256 if not set

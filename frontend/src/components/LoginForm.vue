@@ -23,7 +23,8 @@
 
 <script>
 import { mapActions } from 'vuex';
-import { getAuth, GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
+import { GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
+import { auth } from '@/firebase'; // Import the initialized auth from firebase.js
 
 export default {
   data() {
@@ -47,11 +48,10 @@ export default {
       }
     },
     async signInWithGoogle() {
-      const auth = getAuth();
       const provider = new GoogleAuthProvider();
 
       try {
-        const result = await signInWithPopup(auth, provider);
+        const result = await signInWithPopup(auth, provider); // Use initialized auth
         const user = result.user;
         const idToken = await user.getIdToken();
 
@@ -68,4 +68,5 @@ export default {
   },
 };
 </script>
+
 

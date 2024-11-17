@@ -2,6 +2,7 @@
 *.db
 *.mock.png
 backend/secrets/
+backend/static/
 
 # General
 *.log

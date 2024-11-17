@@ -16,8 +16,21 @@
       <router-link to="/signup" class="link-button" v-if="!isAuthenticated">Sign up</router-link>
       <router-link to="/login" class="button" v-if="!isAuthenticated">Login</router-link>
       <div v-else class="user-info">
-        <span v-if="user">Welcome, {{ user.username }}</span>
-        <button @click="logout">Logout</button>
+        <img
+          v-if="user && user.icon"
+          :src="user.icon"
+          alt="User Icon"
+          class="user-icon"
+          @click="toggleUserMenu"
+        />
+        <span v-if="user && !user.icon" class="user-placeholder" @click="toggleUserMenu">
+          {{ user.username.charAt(0) }}
+        </span>
+        <div v-if="showUserMenu" class="user-menu">
+          <p>Welcome, {{ user.username }}</p>
+          <button @click="logout">Logout</button>
+          <router-link to="/profile" class="menu-item">Edit Profile</router-link>
+        </div>
       </div>
       <div class="search-container">
         <input type="text" class="search-input" v-model="searchQuery" />
@@ -34,6 +47,7 @@ export default {
   data() {
     return {
       searchQuery: '',
+      showUserMenu: false,
     };
   },
   computed: {
@@ -42,6 +56,9 @@ export default {
   },
   methods: {
     ...mapActions(['logout']),
+    toggleUserMenu() {
+      this.showUserMenu = !this.showUserMenu;
+    },
   },
 };
 </script>
@@ -129,7 +146,6 @@ export default {
 .search-input {
   width: 100%;
   padding: 18px 25px 18px 5px;
-  /* space for the icon */
   height: 30px;
   border: 1px solid #6a5acd;
   border-radius: 2px;
@@ -146,15 +162,60 @@ export default {
   font-size: 16px;
   color: #555;
   pointer-events: none;
-  /* icon won't interfere with clicking */
 }
 
 .user-info {
   display: flex;
   align-items: center;
-  gap: 1em;
+  position: relative;
 }
 
+.user-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.user-placeholder {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #ddd;
+  color: #333;
+  border-radius: 50%;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.user-menu {
+  position: absolute;
+  top: 50px;
+  right: 0;
+  background-color: white;
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+  border-radius: 4px;
+  padding: 10px;
+  z-index: 10;
+}
+
+.user-menu p {
+  margin: 0;
+  font-size: 14px;
+}
+
+.user-menu .menu-item {
+  display: block;
+  padding: 8px 0;
+  color: #333;
+  text-decoration: none;
+}
+
+.user-menu .menu-item:hover {
+  color: #5052C0;
+}
 
 @media (max-width: 900px) {
   .header-right {

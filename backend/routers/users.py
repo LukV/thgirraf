@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 from jose import jwt
 from ..schemas import users as user_schemas
 from ..crud import users as crud_users
-from ..core import auth, email_service
+from ..core import auth, utils
 from ..db.database import get_db
 
 
@@ -86,7 +86,7 @@ def request_password_reset(
     # Generate a token (JWT or secure random string) with an expiry
     token = auth.create_password_reset_token(user.uid)
     # Add the email sending task to the background
-    background_tasks.add_task(email_service.send_reset_email, payload.email, token)
+    background_tasks.add_task(utils.send_reset_email, payload.email, token)
 
     return {"message": "Password reset email sent"}
 

@@ -1,8 +1,10 @@
 <template>
-  <HeaderBar @toggle-overlay="toggleOverlay" />
-  <NavBar />
-  <MainContent v-if="!showAuthOverlay" />
-  <PostFooter v-if="!showAuthOverlay" />
+  <div v-if="authStatus !== 'pending'">
+    <HeaderBar @toggle-overlay="toggleOverlay" />
+    <NavBar />
+    <MainContent v-if="!showAuthOverlay" />
+    <PostFooter v-if="!showAuthOverlay" />
+  </div>
   <AuthOverlay
     v-if="showAuthOverlay"
     :mode="authMode"
@@ -12,6 +14,7 @@
 </template>
 
 <script>
+import { mapState } from 'vuex';
 import HeaderBar from "./components/HeaderBar.vue";
 import NavBar from "./components/NavBar.vue";
 import MainContent from "./components/MainContent.vue";
@@ -42,6 +45,7 @@ export default {
     };
   },
   computed: {
+    ...mapState(['authStatus']),
     showAuthOverlay() {
       return Object.keys(AUTH_ROUTES).includes(this.$route.name);
     },
