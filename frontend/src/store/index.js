@@ -91,6 +91,12 @@ const store = createStore({
   getters: {
     isAuthenticated: (state) => state.authStatus === 'authenticated',
     getUser: (state) => state.user,
+    userIconUrl: (state) => {
+      if (state.user && state.user.icon) {
+        return `${process.env.VUE_APP_API_BASE_URL}/icons/${state.user.icon}`;
+      }
+      return null; // Or return a default icon URL if needed
+    },
   },
 });
 
