@@ -1,13 +1,14 @@
-// main.js
 import { createApp } from 'vue';
 import App from './App.vue';
-import { auth } from './firebase';
+import axios from 'axios';
+import store from './store';
+import router from './router';
 
-let app;
+axios.defaults.baseURL = process.env.VUE_APP_API_BASE_URL;
 
-auth.onAuthStateChanged(() => {
-  if (!app) {
-    app = createApp(App);
-    app.mount('#app');
-  }
+store.dispatch('restoreAuth').then(() => {
+  const app = createApp(App);
+  app.use(store);
+  app.use(router);
+  app.mount('#app');
 });

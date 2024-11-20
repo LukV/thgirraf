@@ -1,44 +1,28 @@
+import os
 from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
-import firebase_admin
-from firebase_admin import credentials, auth as firebase_auth
-from fastapi import Depends, HTTPException, status
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from fastapi.staticfiles import StaticFiles
+from .core.thlogging import configure_logging
+from .core.config import setup_cors
+from .routers import users, auth, posts
+from .db import Base, engine
 
-cred = credentials.Certificate('secrets/firebaseAccountKey.json')
-firebase_admin.initialize_app(cred)
+# Configure logging
+configure_logging()
 
+# Create FastAPI app instance
 app = FastAPI()
 
-# Allow all origins for testing; in production, specify the allowed origins
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],  # Use specific origins in production
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+# Create database tables
+Base.metadata.create_all(bind=engine)
 
-@app.get("/")
-async def root():
-    return {"message": "Hello from the FastAPI backend!"}
+# Initialize configurations
+setup_cors(app)
 
-security = HTTPBearer()
+# Include routers
+app.include_router(users.router, prefix="/users", tags=["users"])
+app.include_router(auth.router, prefix="/auth", tags=["auth"])
+app.include_router(posts.router, prefix="/posts", tags=["posts"])
 
-def verify_firebase_token(credentials: HTTPAuthorizationCredentials = Depends(security)):
-    try:
-        token = credentials.credentials
-        decoded_token = firebase_auth.verify_id_token(token)
-        uid = decoded_token['uid']
-        return uid
-    except Exception:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail='Invalid authentication credentials',
-        )
-    
-@app.get('/protected-endpoint')
-def protected_endpoint(uid=Depends(verify_firebase_token)):
-    # uid is the user's Firebase UID
-    return {'message': f'Access granted to user {uid}'}
-
+# Mount the static images directory at "/icons"
+static_icons_dir = os.path.join(os.path.dirname(__file__), "static", "icons")
+app.mount("/icons", StaticFiles(directory=static_icons_dir), name="icons")

@@ -6,46 +6,37 @@
 </template>
 
 <script>
-import SignUpForm from './SignUpForm.vue';
-import LoginForm from './LoginForm.vue';
-import ResetPasswordForm from './ResetPasswordForm.vue';
+import SignUpForm from "./SignUpForm.vue";
+import LoginForm from "./LoginForm.vue";
+import RequestPasswordReset from "./RequestPasswordReset.vue";
+import ResetPassword from "./ResetPassword.vue";
 
 export default {
-  props: ['mode'],
+  props: ["mode"],
   components: {
     SignUpForm,
     LoginForm,
-    ResetPasswordForm,
-  },
-  data() {
-    return {
-      currentMode: this.mode,
-    };
+    RequestPasswordReset,
+    ResetPassword,
   },
   computed: {
     currentComponent() {
-      switch (this.currentMode) {
-        case 'signup':
-          return 'SignUpForm';
-        case 'reset':
-          return 'ResetPasswordForm';
-        default:
-          return 'LoginForm';
-      }
+      return {
+        signup: "SignUpForm",
+        login: "LoginForm",
+        "request-reset": "RequestPasswordReset",
+        reset: "ResetPassword",
+      }[this.mode];
     },
   },
   methods: {
     onAuthSuccess() {
-      this.$emit('close');
-      // Optionally, update parent component or Vuex store
+      this.$emit("close");
     },
     switchMode(mode) {
-      this.currentMode = mode;
+      this.$emit("switch-mode", mode);
     },
   },
 };
 </script>
 
-<style scoped>
-/* Style me */
-</style>

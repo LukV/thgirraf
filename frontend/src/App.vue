@@ -1,17 +1,34 @@
 <template>
+  <div v-if="authStatus !== 'pending'" class="morrissey">
     <HeaderBar @toggle-overlay="toggleOverlay" />
     <NavBar />
-    <MainContent />
-    <PostFooter />
-    <OverlayMenu v-if="overlayVisible" @toggle-overlay="toggleOverlay" />
+    <MainContent v-if="!showAuthOverlay" />
+    <PostFooter v-if="!showAuthOverlay" />
+  </div>
+  <AuthOverlay
+    v-if="showAuthOverlay"
+    :mode="authMode"
+    @close="closeAuthOverlay"
+  />
+  <OverlayMenu v-if="overlayVisible" @toggle-overlay="toggleOverlay" />
 </template>
 
 <script>
+import { mapState } from 'vuex';
 import HeaderBar from "./components/HeaderBar.vue";
 import NavBar from "./components/NavBar.vue";
 import MainContent from "./components/MainContent.vue";
 import PostFooter from "./components/PostFooter.vue";
 import OverlayMenu from "./components/OverlayMenu.vue";
+import AuthOverlay from "./components/AuthOverlay.vue";
+
+// Map route names to modes
+const AUTH_ROUTES = {
+  Login: "login",
+  SignUp: "signup",
+  RequestPasswordReset: "request-reset",
+  ResetPassword: "reset",
+};
 
 export default {
   components: {
@@ -19,23 +36,36 @@ export default {
     NavBar,
     MainContent,
     PostFooter,
-    OverlayMenu
+    OverlayMenu,
+    AuthOverlay,
   },
   data() {
     return {
-      overlayVisible: false
+      overlayVisible: false,
     };
+  },
+  computed: {
+    ...mapState(['authStatus']),
+    showAuthOverlay() {
+      return Object.keys(AUTH_ROUTES).includes(this.$route.name);
+    },
+    authMode() {
+      return AUTH_ROUTES[this.$route.name] || null;
+    },
   },
   methods: {
     toggleOverlay() {
       this.overlayVisible = !this.overlayVisible;
-    }
-  }
+    },
+    closeAuthOverlay() {
+      this.$router.push("/"); // Redirect to home when overlay is closed
+    },
+  },
 };
 </script>
 
 <style>
-#app {
+.morrissey {
   display: flex;
   flex-direction: column;
   height: 100vh;
@@ -57,7 +87,6 @@ body, html {
   -moz-osx-font-smoothing: grayscale;
   font-family: "Helvetica Neue", Helvetica, "Segoe UI", Arial, "Liberation Sans", sans-serif;
   color: #2c3e50;
-  font-size: 14px;
   height: 100%;
 }
 
@@ -83,9 +112,12 @@ body, html {
     text-align: center;
 }
 
+.overlay, .auth-overlay p {
+    margin: 10px 0;
+}
+
 .overlay a {
     color: black;
-    font-size: 24px;
     margin: 10px 0;
     text-decoration: none;
 }
@@ -104,19 +136,14 @@ body, html {
 
 h2 {
     font-size: 22px;
-    margin-bottom: 16px;
     color: #5052C0;
-}
-
-p {
-    margin: 10px 0;
+    margin-bottom: 16px;
 }
 
 a {
     color: #5052C0;
     text-decoration: underline;
     cursor: pointer;
-    font-size: 14px;
 }
 
 input {
@@ -125,7 +152,6 @@ input {
     margin: 8px 0;
     border-radius: 4px;
     border: 1px solid #ccc;
-    font-size: 16px;
 }
 
 .login-form, .sign-up-form, .reset-password-form {
@@ -142,7 +168,6 @@ input {
 .google-button {
     width: 100%;
     padding: 10px;
-    font-size: 16px;
     background-color: #ffffff;
     color: #757575;
     border: 1px solid #d9d9d9;
@@ -166,7 +191,6 @@ input {
 .submit-button {
   width: 100%;
   padding: 10px;
-  font-size: 16px;
   background-color: #5052C0;
   /* Your preferred purple color */
   color: white;

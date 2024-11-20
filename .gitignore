@@ -2,6 +2,7 @@
 *.db
 *.mock.png
 backend/secrets/
+backend/static/
 
 # General
 *.log
@@ -83,6 +84,7 @@ venv/
 ENV/
 env.bak/
 venv.bak/
+.env.*
 
 # mypy
 .mypy_cache/

@@ -76,31 +76,27 @@ methods: {
     border-radius: 35%;
 }
 .user-info h2 {
-    font-size: 16px;
     font-weight: bold;
+    margin-bottom: 0px;
     color: black;
 }
 .user-info p {
-    font-size: 12px;
     color: gray;
 }
 .content p {
-    font-size: 14px;
-    color: #333;
     line-height: 1.6;
 }
 .actions {
     display: flex;
     gap: 15px;
     color: #888;
-    font-size: 16px;
+    font-size: 22px;
 }
 .actions i {
     cursor: pointer;
 }
 .comments {
     color: gray;
-    font-size: 14px;
     cursor: pointer;
 }
 </style>
