@@ -1,5 +1,0 @@
-{
-    "python.analysis.extraPaths": [
-        "./backend"  // This tells VSCode to treat './backend' as the root for imports
-    ]
-}
