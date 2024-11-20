@@ -3,6 +3,7 @@
 *.mock.png
 backend/secrets/
 backend/static/
+.vscode/
 
 # General
 *.log
