@@ -1,5 +1,5 @@
 <template>
-  <div v-if="authStatus !== 'pending'">
+  <div v-if="authStatus !== 'pending'" class="morrissey">
     <HeaderBar @toggle-overlay="toggleOverlay" />
     <NavBar />
     <MainContent v-if="!showAuthOverlay" />
@@ -65,7 +65,7 @@ export default {
 </script>
 
 <style>
-#app {
+.morrissey {
   display: flex;
   flex-direction: column;
   height: 100vh;
@@ -87,7 +87,6 @@ body, html {
   -moz-osx-font-smoothing: grayscale;
   font-family: "Helvetica Neue", Helvetica, "Segoe UI", Arial, "Liberation Sans", sans-serif;
   color: #2c3e50;
-  font-size: 14px;
   height: 100%;
 }
 
@@ -119,7 +118,6 @@ body, html {
 
 .overlay a {
     color: black;
-    font-size: 24px;
     margin: 10px 0;
     text-decoration: none;
 }
@@ -136,7 +134,7 @@ body, html {
     cursor: pointer;
 }
 
-.overlay, .auth-overlay h2 {
+h2 {
     font-size: 22px;
     color: #5052C0;
     margin-bottom: 16px;
@@ -146,7 +144,6 @@ a {
     color: #5052C0;
     text-decoration: underline;
     cursor: pointer;
-    font-size: 14px;
 }
 
 input {
@@ -155,7 +152,6 @@ input {
     margin: 8px 0;
     border-radius: 4px;
     border: 1px solid #ccc;
-    font-size: 16px;
 }
 
 .login-form, .sign-up-form, .reset-password-form {
@@ -172,7 +168,6 @@ input {
 .google-button {
     width: 100%;
     padding: 10px;
-    font-size: 16px;
     background-color: #ffffff;
     color: #757575;
     border: 1px solid #d9d9d9;
@@ -196,7 +191,6 @@ input {
 .submit-button {
   width: 100%;
   padding: 10px;
-  font-size: 16px;
   background-color: #5052C0;
   /* Your preferred purple color */
   color: white;

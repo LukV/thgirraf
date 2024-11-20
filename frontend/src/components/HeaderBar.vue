@@ -135,7 +135,6 @@ export default {
 .button {
   display: inline-block;
   padding: 12px 30px;
-  font-size: 12px;
   background-color: #5052C0;
   color: white;
   text-align: center;
@@ -214,7 +213,6 @@ export default {
 }
 
 .user-name {
-  font-size: 14px;
   font-weight: bold;
   color: #333;
 }
@@ -237,7 +235,6 @@ export default {
   align-items: center;
   gap: 10px;
   padding: 10px 15px;
-  font-size: 14px;
   color: #333;
   cursor: pointer;
   transition: background-color 0.3s ease;
@@ -248,7 +245,6 @@ export default {
 }
 
 .menu-item i {
-  font-size: 16px;
   color: #5052C0;
 }
 

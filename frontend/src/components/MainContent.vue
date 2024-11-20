@@ -85,20 +85,17 @@ section .user img {
 }
 
 section .user-info h2 {
-  font-size: 16px;
   font-weight: bold;
   color: black;
 }
 
 section .user-info p {
-  font-size: 12px;
   color: gray;
   margin-top: 2px;
 }
 
 /* Content styling */
 section .content p {
-  font-size: 16px;
   color: #333;
   line-height: 1.6;
 }
@@ -112,7 +109,6 @@ section .actions {
   display: flex;
   gap: 15px;
   color: #888;
-  font-size: 16px;
 }
 
 section .actions i {
@@ -122,7 +118,6 @@ section .actions i {
 /* View comments row styling */
 section .comments {
   color: gray;
-  font-size: 14px;
   cursor: pointer;
 }
 

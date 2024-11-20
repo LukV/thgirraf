@@ -18,7 +18,7 @@ class Post(Base):
     __tablename__ = "posts"
 
     id = Column(Integer, primary_key=True, index=True)
+    pid = Column(String, unique=True, index=True, nullable=False)
     user_id = Column(Integer, nullable=False)
-    title = Column(String, nullable=False)
-    content = Column(String, nullable=False)
+    text = Column(String, nullable=False)
     date_created = Column(DateTime(timezone=True), server_default=func.now()) # pylint: disable=E1102
