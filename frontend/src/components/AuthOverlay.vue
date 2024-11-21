@@ -10,6 +10,9 @@ import SignUpForm from "./SignUpForm.vue";
 import LoginForm from "./LoginForm.vue";
 import RequestPasswordReset from "./RequestPasswordReset.vue";
 import ResetPassword from "./ResetPassword.vue";
+import AccountForm from "./AccountForm.vue";
+import ProfileForm from "./ProfileForm.vue";
+import DeleteAccountForm from "./DeleteAccountForm.vue";
 
 export default {
   props: ["mode"],
@@ -18,6 +21,9 @@ export default {
     LoginForm,
     RequestPasswordReset,
     ResetPassword,
+    AccountForm,
+    ProfileForm,
+    DeleteAccountForm
   },
   computed: {
     currentComponent() {
@@ -26,6 +32,9 @@ export default {
         login: "LoginForm",
         "request-reset": "RequestPasswordReset",
         reset: "ResetPassword",
+        account: "AccountForm",
+        profile: "ProfileForm",
+        "delete-account": "DeleteAccountForm"
       }[this.mode];
     },
   },
@@ -39,4 +48,3 @@ export default {
   },
 };
 </script>
-

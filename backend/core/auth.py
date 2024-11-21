@@ -40,7 +40,10 @@ def verify_firebase_token(token: str) -> dict:
     except Exception as exc:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid Firebase token"
+            detail={
+                "code": "AUTH_001",
+                "message": "Invalid token."
+            }
         ) from exc
 
 def create_access_token(data: dict) -> str:

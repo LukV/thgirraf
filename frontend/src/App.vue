@@ -1,4 +1,5 @@
 <template>
+  <NotificationBar v-if="notifications.length" :notifications="notifications" @dismiss="clearNotification" />
   <div v-if="authStatus !== 'pending'" class="morrissey">
     <HeaderBar @toggle-overlay="toggleOverlay" />
     <NavBar />
@@ -14,13 +15,14 @@
 </template>
 
 <script>
-import { mapState } from 'vuex';
+import { mapState, mapMutations } from 'vuex';
 import HeaderBar from "./components/HeaderBar.vue";
 import NavBar from "./components/NavBar.vue";
 import MainContent from "./components/MainContent.vue";
 import PostFooter from "./components/PostFooter.vue";
 import OverlayMenu from "./components/OverlayMenu.vue";
 import AuthOverlay from "./components/AuthOverlay.vue";
+import NotificationBar from "@/components/NotificationBar";
 
 // Map route names to modes
 const AUTH_ROUTES = {
@@ -28,6 +30,9 @@ const AUTH_ROUTES = {
   SignUp: "signup",
   RequestPasswordReset: "request-reset",
   ResetPassword: "reset",
+  Account: "account",
+  Profile: "profile",
+  DeleteAccount: "delete-account",
 };
 
 export default {
@@ -38,6 +43,7 @@ export default {
     PostFooter,
     OverlayMenu,
     AuthOverlay,
+    NotificationBar,
   },
   data() {
     return {
@@ -45,7 +51,7 @@ export default {
     };
   },
   computed: {
-    ...mapState(['authStatus']),
+    ...mapState(['authStatus', 'notifications']),
     showAuthOverlay() {
       return Object.keys(AUTH_ROUTES).includes(this.$route.name);
     },
@@ -54,6 +60,10 @@ export default {
     },
   },
   methods: {
+    ...mapMutations(["ADD_NOTIFICATION", "REMOVE_NOTIFICATION"]),
+    clearNotification(notificationId) {
+      this.REMOVE_NOTIFICATION(notificationId);
+    },
     toggleOverlay() {
       this.overlayVisible = !this.overlayVisible;
     },
@@ -113,7 +123,7 @@ body, html {
 }
 
 .overlay, .auth-overlay p {
-    margin: 10px 0;
+    margin: 10px 0 30px auto;
 }
 
 .overlay a {
@@ -154,7 +164,7 @@ input {
     border: 1px solid #ccc;
 }
 
-.login-form, .sign-up-form, .reset-password-form {
+.login-form, .sign-up-form, .reset-password-form, .account-form, .profile-form {
   width: 90%;
   max-width: 320px;
   background: #fff;

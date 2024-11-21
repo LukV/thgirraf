@@ -24,7 +24,7 @@
 <script>
 import { mapActions } from 'vuex';
 import { GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
-import { auth } from '@/firebase'; // Import the initialized auth from firebase.js
+import { auth } from '@/firebase';
 
 export default {
   data() {
@@ -34,7 +34,7 @@ export default {
     };
   },
   methods: {
-    ...mapActions(['login']),
+    ...mapActions(['login', 'addNotification']), 
     async loginUser() {
       try {
         await this.login({
@@ -44,7 +44,7 @@ export default {
         this.$emit('auth-success'); // Emit success event to close overlay
       } catch (error) {
         console.error(error);
-        // TODO: Handle errors
+        this.addNotification({ message: error.message || 'Login failed. Please try again.', type: 'error' });
       }
     },
     async signInWithGoogle() {
@@ -62,11 +62,12 @@ export default {
         this.$emit('auth-success'); // Emit success event to close overlay
       } catch (error) {
         console.error(error);
-        // TODO: Handle errors
+        this.addNotification({ message: error.message || 'Google login failed.', type: 'error' });
       }
     },
   },
 };
 </script>
+
 
 

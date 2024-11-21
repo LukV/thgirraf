@@ -38,6 +38,24 @@ const routes = [
     props: { mode: 'reset' },
   },
   {
+    path: '/account',
+    name: 'Account',
+    component: AuthOverlay,
+    props: { mode: 'account' },
+  },
+  {
+    path: '/profile',
+    name: 'Profile',
+    component: AuthOverlay,
+    props: { mode: 'profile' },
+  },
+  {
+    path: '/delete-account',
+    name: 'DeleteAccount',
+    component: AuthOverlay,
+    props: { mode: 'delete-account' },
+  },
+  {
     path: '/:pathMatch(.*)*',
     redirect: '/',
   },

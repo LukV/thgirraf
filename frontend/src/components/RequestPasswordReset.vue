@@ -19,13 +19,20 @@
       };
     },
     methods: {
-      ...mapActions(['requestPasswordReset']),
+      ...mapActions(['addNotification', 'requestPasswordReset']),
       async handlePasswordReset() {
         try {
           await this.requestPasswordReset({ email: this.email });
-          alert('Password reset email sent. Please check your inbox.');
+          this.addNotification({
+            message: "Password reset email sent. Please check your inbox.",
+            type: "info",
+          });
+          this.$router.push("/");
         } catch (error) {
-          alert(error.response?.data?.detail || 'Failed to send password reset email.');
+          this.addNotification({
+            message: error.response?.data?.detail[0].msg || 'Failed to send password reset email.',
+            type: "error",
+          });
         }
       },
       switchToLogin() {

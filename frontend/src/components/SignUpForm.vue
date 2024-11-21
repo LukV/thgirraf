@@ -29,7 +29,7 @@ export default {
     };
   },
   methods: {
-    ...mapActions(['login']),
+    ...mapActions(['login', 'addNotification']),
     async signUp() {
       try {
         // Create a new user in the backend
@@ -46,10 +46,11 @@ export default {
         });
 
         // Emit success event to close overlay
+        this.addNotification({ message: 'Registration successful. Welcome to the club.', type: 'info' });
         this.$emit('auth-success');
       } catch (error) {
         console.error(error);
-        // Handle errors
+        this.addNotification({ message: error.response?.data?.detail[0]?.msg|| 'Registration failed. Please try again.', type: 'error' });
       }
     },
     async signInWithGoogle() {

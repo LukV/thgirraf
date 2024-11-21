@@ -1,42 +1,67 @@
 <template>
   <div class="main-container" id="main-container">
     <main>
-      <UserSection v-for="post in posts" :key="post.id" :user="post.user" :content="post.content"
-        :actions="post.actions" />
+      <UserSection 
+        v-for="post in filteredPosts" 
+        :key="post.id" 
+        :user="userDetails[post.user_id]" 
+        :content="post.text"
+        :time="post.date_created"
+        :actions="['comment', 'retweet', 'like']" />
     </main>
   </div>
 </template>
 
 <script>
 import UserSection from './UserSection.vue';
+import apiClient from '@/apiClient';
 
 export default {
   components: { UserSection },
   data() {
     return {
       posts: [],
+      userDetails: {}, // Stores user details indexed by user_id
     };
   },
-  created() {
-    this.initializePosts();
+  computed: {
+    filteredPosts() {
+      // Filter posts to only include those with valid user details
+      return this.posts.filter(post => this.userDetails[post.user_id]);
+    },
+  },
+  async created() {
+    await this.fetchPosts();
   },
   methods: {
-    initializePosts() {
-      this.posts = [
-        {
-          id: 1,
-          user: { name: '@Seeta', profileImage: 'user-2.mock.png', time: '23 min' },
-          content: '<strong>Cat memes</strong> have always been a big part of internet culture, but now, <a href="#">catspiracies</a> are trending because of the US election. From JD Vance’s attacks on “childless cat ladies” to a baseless conspiracy theory boosted by Donald Trump and Elon Musk about people eating pets in Ohio, our feline friends are taking center stage ahead of November.',
-          actions: ['comment', 'retweet', 'like'],
-        },
-        {
-          id: 2,
-          user: { name: '@friedrich', profileImage: 'user-3.mock.png', time: '1 week ago' },
-          content: 'Hoe stap je over van Google Analytics naar privacy proof Matomo...',
-          actions: ['comment', 'retweet', 'like'],
-        }
-      ];
-    }
+    async fetchPosts() {
+      try {
+        // Fetch posts from the API
+        const postResponse = await apiClient.get('/posts');
+        this.posts = postResponse.data;
+
+        // Extract unique user IDs from posts
+        const userIds = [...new Set(this.posts.map(post => post.user_id))];
+
+        // Fetch user details in a single batch call
+        const userResponse = await apiClient.post('/users/batch', userIds);
+
+        // Map user details by user_id
+        this.userDetails = userResponse.data.reduce((map, user) => {
+          map[user.id] = {
+            name: user.username,
+            profileImage: user.icon
+              ? `${process.env.VUE_APP_API_BASE_URL}/icons/${user.icon}`
+              : null,
+            email: user.email,
+            time: user.date_created,
+          };
+          return map;
+        }, {});
+      } catch (error) {
+        console.error('Error fetching posts or users:', error);
+      }
+    },
   },
 };
 </script>

@@ -4,11 +4,13 @@ import axios from 'axios';
 import apiClient from '@/apiClient';
 
 const store = createStore({
+  namespaced: true,
   state: {
     user: null,
     accessToken: localStorage.getItem('accessToken') || null,
     refreshToken: localStorage.getItem('refreshToken') || null,
     authStatus: 'pending', // 'pending', 'authenticated', 'unauthenticated'
+    notifications: [],
   },
   mutations: {
     SET_USER(state, user) {
@@ -28,6 +30,14 @@ const store = createStore({
       state.authStatus = 'unauthenticated';
       localStorage.removeItem('accessToken');
       localStorage.removeItem('refreshToken');
+    },
+    ADD_NOTIFICATION(state, notification) {
+      state.notifications.push({ id: Date.now(), ...notification });
+    },
+    REMOVE_NOTIFICATION(state, notificationId) {
+      state.notifications = state.notifications.filter(
+        (n) => n.id !== notificationId
+      );
     },
   },
   actions: {
@@ -59,9 +69,12 @@ const store = createStore({
         const userResponse = await apiClient.get('/users/me');
         commit('SET_USER', userResponse.data);
       } catch (error) {
-        console.error(error);
-        commit('CLEAR_AUTH');
-        throw error;
+        const detail = error.response?.data?.detail;
+        if (detail) {
+          throw detail;
+        } else {
+          throw { code: "GENERIC_ERROR", message: "An error occurred. Please try again.", msgtype: "error" };
+        }
       }
     },
     logout({ commit }) {
@@ -87,6 +100,21 @@ const store = createStore({
         throw error;
       }
     },
+    addNotification({ commit }, notification) {
+      const id = Date.now();
+      const autoDismissTimeout = 12000; 
+
+      // Add the notification
+      commit("ADD_NOTIFICATION", { id, ...notification });
+
+      // Auto-remove after timeout
+      setTimeout(() => {
+        commit("REMOVE_NOTIFICATION", id);
+      }, autoDismissTimeout);
+    },
+    removeNotification({ commit }, notificationId) {
+      commit("REMOVE_NOTIFICATION", notificationId);
+    }
   },
   getters: {
     isAuthenticated: (state) => state.authStatus === 'authenticated',

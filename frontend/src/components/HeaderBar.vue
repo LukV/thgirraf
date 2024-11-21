@@ -17,24 +17,22 @@
       <router-link to="/login" class="button" v-if="!isAuthenticated">Login</router-link>
       <div v-else class="user-info" ref="userInfo">
         <div class="user-details" @click.stop="toggleUserMenu">
-          <img
-            v-if="userIconUrl"
-            :src="userIconUrl"
-            alt="User Icon"
-            class="user-icon"
-          />
+          <img v-if="userIconUrl" :src="userIconUrl" alt="User Icon" class="user-icon" />
+          <div v-else class="user-placeholder">
+            {{ user.username ? user.username.charAt(0).toUpperCase() : "?" }}
+          </div>
           <span class="user-name">{{ user.username }}</span>
         </div>
         <div v-if="showUserMenu" class="user-menu">
-          <div class="menu-item">
+          <router-link to="/account" class="menu-item">
             <i class="fas fa-user"></i>
             <span>Account</span>
-          </div>
+          </router-link>
           <div class="menu-divider"></div>
-          <div class="menu-item">
+          <router-link to="/account" class="menu-item">
             <i class="fas fa-edit"></i>
             <span>Profile</span>
-          </div>
+          </router-link>
           <div class="menu-divider"></div>
           <div class="menu-item" @click="logout">
             <i class="fas fa-sign-out-alt"></i>
@@ -202,14 +200,29 @@ export default {
   display: flex;
   align-items: center;
   gap: 8px;
+  justify-content: center;
 }
 
 .user-icon {
   width: 40px;
   height: 40px;
-  border-radius: 50%;
+  border-radius: 35%;
   object-fit: cover;
   cursor: pointer;
+}
+
+.user-placeholder {
+  width: 40px;
+  height: 40px;
+  border-radius: 35%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #ccc;
+  color: white;
+  font-size: 24px;
+  font-weight: bold;
+  text-transform: uppercase;
 }
 
 .user-name {
@@ -238,6 +251,7 @@ export default {
   color: #333;
   cursor: pointer;
   transition: background-color 0.3s ease;
+  text-decoration: none;
 }
 
 .menu-item:hover {

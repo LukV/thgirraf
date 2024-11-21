@@ -1,6 +1,7 @@
 from typing import Optional, List
 from fastapi import Depends, HTTPException, status
 from sqlalchemy.orm import Session
+from sqlalchemy.exc import SQLAlchemyError
 from jose import JWTError, jwt
 import ulid
 from ..db import models, get_db
@@ -65,6 +66,49 @@ def update_user(
         db.refresh(db_user)
     return db_user
 
+def update_password(
+        db: Session,
+        user_id: int,
+        new_password: str) -> Optional[models.User]:
+    """
+    Updates an existing user's password in the database.
+
+    Args:
+        db (Session): The database session.
+        user_id (int): The ID of the user to update.
+        new_password (str): The new password to set.
+
+    Returns:
+        User or None: The updated user instance or None if not found.
+    """
+    db_user = db.query(models.User).filter(models.User.id == user_id).first()
+    if db_user:
+        try:
+            hashed_password = auth.hash_password(new_password)
+            db_user.password = hashed_password
+            db.commit()
+            db.refresh(db_user)
+        except JWTError as exc:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail={
+                    "code": "AUTH_001",
+                    "message": "Invalid token."
+                },
+                headers={"WWW-Authenticate": "Bearer"},
+            ) from exc
+        except SQLAlchemyError as exc:
+            db.rollback()
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail={
+                    "code": "SRV_002",
+                    "message": "An unexpected database error occurred."
+                }
+            ) from exc
+    return db_user
+
+
 def delete_user(db: Session, user_id: int) -> Optional[models.User]:
     """
     Deletes an existing user from the database.
@@ -105,20 +149,29 @@ def get_current_user(
         if email is None:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Invalid token: missing email",
+                detail={
+                    "code": "AUTH_003",
+                    "message": "Invalid token: missing email."
+                },
                 headers={"WWW-Authenticate": "Bearer"},
             )
         user = get_user_by_email(db, email)
         if user is None:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail="User not found",
+                detail={
+                    "code": "USER_001",
+                    "message": "User not found."
+                },
             )
         return user
     except JWTError as exc:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid token",
+            detail={
+                "code": "AUTH_001",
+                "message": "Invalid token."
+            },
             headers={"WWW-Authenticate": "Bearer"},
         ) from exc
 
@@ -148,6 +201,19 @@ def get_user_by_uid(db: Session, uid: str) -> Optional[models.User]:
     """
     return db.query(models.User).filter(models.User.uid == uid).first()
 
+def get_user_by_id(db: Session, user_id: int) -> Optional[models.User]:
+    """
+    Fetches a user by their id.
+
+    Args:
+        db (Session): The database session.
+        id (int): The id of the user.
+
+    Returns:
+        User or None: The fetched user or None if not found.
+    """
+    return db.query(models.User).filter(models.User.id == user_id).first()
+
 def get_user_by_email(db: Session, email: str) -> Optional[models.User]:
     """
     Fetches a user by their email.
@@ -172,3 +238,16 @@ def get_all_users(db: Session) -> List[models.User]:
         List[User]: A list of all user instances.
     """
     return db.query(models.User).all()
+
+def get_users_by_ids(db: Session, user_ids: List[int]) -> List[models.User]:
+    """
+    Fetches multiple users by their IDs.
+
+    Args:
+        db (Session): The database session.
+        user_ids (List[int]): List of user IDs.
+
+    Returns:
+        List[User]: A list of users matching the given IDs.
+    """
+    return db.query(models.User).filter(models.User.id.in_(user_ids)).all()

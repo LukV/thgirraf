@@ -27,7 +27,7 @@ export default {
     },
   },
   methods: {
-    ...mapActions(['resetPassword']),
+    ...mapActions(['addNotification', 'resetPassword']),
     async handleResetPassword() {
       try {
         // Pass the token extracted from the URL query string
@@ -36,10 +36,16 @@ export default {
           newPassword: this.newPassword,
           token: this.token,
         });
-        alert('Password has been reset successfully.');
+        this.addNotification({
+          message: "Password has been reset successfully.",
+          type: "info",
+        });
         this.$router.push('/login'); // Redirect to login after success
       } catch (error) {
-        alert(error.response?.data?.detail || 'Failed to reset password.');
+        this.addNotification({
+          message: error.response?.data?.detail[0]?.msg || 'Failed to reset password.',
+          type: "error",
+        });
       }
     },
   },

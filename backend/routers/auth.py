@@ -54,7 +54,12 @@ def login(
                crud_users.get_user_by_email(db, login_data.username)
 
         if not user or not auth.verify_password(login_data.password, user.password):
-            raise HTTPException(status_code=400, detail="Invalid credentials")
+            raise HTTPException(
+                status_code=400,
+                detail={
+                    "code": "AUTH_002",
+                    "message": "Invalid credentials. Please try again, or reset your password."
+                })
 
         # Generate access and refresh tokens
         access_token = auth.create_access_token(data={"sub": user.email})
@@ -65,7 +70,10 @@ def login(
             "token_type": "bearer"
         }
 
-    raise HTTPException(status_code=400, detail="Missing login credentials")
+    raise HTTPException(status_code=400, detail={
+        "code": "AUTH_002",
+        "message": "Invalid credentials. Please try again or reset your password."
+    })
 
 @router.post("/refresh", response_model=TokenPair)
 def refresh_token(token: str, db: Session = Depends(get_db)):
@@ -85,11 +93,21 @@ def refresh_token(token: str, db: Session = Depends(get_db)):
         payload = jwt.decode(token, auth.SECRET_KEY, algorithms=[auth.ALGORITHM])
         email = payload.get("sub")
         if email is None:
-            raise HTTPException(status_code=401, detail="Invalid refresh token")
+            raise HTTPException(
+                status_code=401,
+                detail={
+                    "code": "AUTH_005",
+                    "message": "Invalid refresh token."
+                })
 
         user = crud_users.get_user_by_email(db, email)
         if user is None:
-            raise HTTPException(status_code=401, detail="User not found")
+            raise HTTPException(
+                status_code=401,
+                detail={
+                    "code": "USER_001",
+                    "message": "User not found."
+                })
 
         # Generate new access and refresh tokens
         access_token = auth.create_access_token(data={"sub": email})
@@ -101,4 +119,10 @@ def refresh_token(token: str, db: Session = Depends(get_db)):
         }
 
     except JWTError as exc:
-        raise HTTPException(status_code=401, detail="Invalid refresh token") from exc
+        raise HTTPException(
+            status_code=401,
+            detail={
+                "code": "AUTH_005",
+                "message": "Invalid refresh token.",
+                "msgtype": "error"
+            }) from exc

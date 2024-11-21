@@ -7,6 +7,7 @@ class PostCreate(BaseModel):
 class PostResponse(BaseModel):
     id: int
     pid: str
+    user_id: int
     text: str
     date_created: datetime
 
