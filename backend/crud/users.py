@@ -1,5 +1,8 @@
+import os
+from pathlib import Path
+import shutil
 from typing import Optional, List
-from fastapi import Depends, HTTPException, status
+from fastapi import Depends, HTTPException, UploadFile, status, BackgroundTasks
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import SQLAlchemyError
 from jose import JWTError, jwt
@@ -8,6 +11,11 @@ from ..db import models, get_db
 from ..schemas import users as user_schemas
 from ..core import auth
 from ..core.auth import oauth2_scheme, SECRET_KEY, ALGORITHM
+
+# Resolve the path to the backend directory
+BASE_DIR = Path(__file__).resolve().parent.parent
+ICON_DIR = BASE_DIR / "static/icons"
+ICON_DIR.mkdir(parents=True, exist_ok=True)
 
 def create_user(db: Session,
                 user: user_schemas.UserCreate,
@@ -108,6 +116,54 @@ def update_password(
             ) from exc
     return db_user
 
+def update_user_icon(
+    db: Session,
+    user_id: int,
+    file: UploadFile,
+    background_tasks: BackgroundTasks,
+) -> dict:
+    """
+    Updates a user's profile icon.
+
+    Args:
+        db (Session): The database session.
+        user_id (int): The ID of the user whose icon is being updated.
+        file (UploadFile): The uploaded image file.
+        background_tasks (BackgroundTasks): To handle image cleanup.
+
+    Returns:
+        dict: Success message and new icon URL.
+    """
+    # Fetch the user
+    user = get_user_by_id(db, user_id)
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found.")
+
+    # Validate file type
+    if not file.content_type.startswith("image/"):
+        raise HTTPException(status_code=400, detail="Uploaded file must be an image.")
+
+    # Generate a unique filename
+    file_extension = file.filename.split(".")[-1]
+    unique_filename = f"{user.uid}_{ulid.new()}.{file_extension}"
+    file_path = ICON_DIR / unique_filename
+
+    # Save the new icon
+    with open(file_path, "wb") as buffer:
+        shutil.copyfileobj(file.file, buffer)
+
+    # Schedule old icon cleanup if it exists and is not the default icon
+    if user.icon and user.icon != "default.png":
+        old_icon_path = ICON_DIR / user.icon
+        if old_icon_path.exists():
+            background_tasks.add_task(os.remove, old_icon_path)
+
+    # Update user's icon in the database
+    user.icon = unique_filename
+    db.commit()
+    db.refresh(user)
+
+    return {"message": "Profile icon updated successfully", "icon_url": f"/icons/{unique_filename}"}
 
 def delete_user(db: Session, user_id: int) -> Optional[models.User]:
     """
@@ -122,6 +178,12 @@ def delete_user(db: Session, user_id: int) -> Optional[models.User]:
     """
     db_user = db.query(models.User).filter(models.User.id == user_id).first()
     if db_user:
+        if db_user.icon and db_user.icon != "default.png":
+            background_tasks = BackgroundTasks()
+            icon_path = ICON_DIR / db_user.icon
+            if icon_path.exists():
+                background_tasks.add_task(os.remove, icon_path)
+
         db.delete(db_user)
         db.commit()
     return db_user

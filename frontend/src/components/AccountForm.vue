@@ -49,7 +49,7 @@ export default {
     },
   },
   methods: {
-    ...mapActions(['addNotification', 'removeNotification']),
+    ...mapActions(['addNotification']),
     async handleChangePassword() {
       try {
         const passwordData = {

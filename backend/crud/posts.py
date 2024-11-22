@@ -1,6 +1,7 @@
 from typing import List
 import logging
 from fastapi import HTTPException, status
+from sqlalchemy import desc
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 import ulid
@@ -54,4 +55,4 @@ def get_all_posts(db: Session) -> List[models.Post]:
     Returns:
         List[Post]: A list of all post instances.
     """
-    return db.query(models.Post).all()
+    return db.query(models.Post).order_by(desc(models.Post.date_created)).all()

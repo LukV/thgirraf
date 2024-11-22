@@ -29,7 +29,7 @@
             <span>Account</span>
           </router-link>
           <div class="menu-divider"></div>
-          <router-link to="/account" class="menu-item">
+          <router-link to="/profile" class="menu-item">
             <i class="fas fa-edit"></i>
             <span>Profile</span>
           </router-link>

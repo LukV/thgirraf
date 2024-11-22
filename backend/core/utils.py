@@ -85,6 +85,5 @@ def download_user_icon(url: str, user_id: str) -> str:
         # Return only the filename
         return icon_filename
 
-    except requests.RequestException:
-        # Fallback filename if download fails
-        return "default.png"
+    except requests.RequestException as exc:
+        return exc
