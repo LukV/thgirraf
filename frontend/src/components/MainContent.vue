@@ -6,6 +6,7 @@
         :key="post.id" 
         :user="userDetails[post.user_id]" 
         :content="post.text"
+        :embed="postEmbed(post)"
         :time="post.date_created"
         :actions="['comment', 'retweet', 'like']" />
     </main>
@@ -34,6 +35,22 @@ export default {
     await this.fetchPosts();
   },
   methods: {
+    postEmbed(post) {
+      if (post.title && (post.description || post.image_url)) {
+        return {
+          title: post.title,
+          description: post.description,
+          image_url: post.image_url,
+          url: this.extractUrlFromText(post.text),
+        };
+      }
+      return null;
+    },
+    extractUrlFromText(text) {
+      const urlPattern = /https?:\/\/[^\s]+/;
+      const match = text.match(urlPattern);
+      return match ? match[0] : null;
+    },
     async fetchPosts() {
       try {
         // Fetch posts from the API
@@ -121,8 +138,7 @@ section .user-info p {
 
 /* Content styling */
 section .content p {
-  color: #333;
-  line-height: 1.6;
+  line-height: 1.4;
 }
 
 section .content p strong {

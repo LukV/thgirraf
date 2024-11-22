@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import Optional
 from pydantic import BaseModel
 
 class PostCreate(BaseModel):
@@ -9,6 +10,9 @@ class PostResponse(BaseModel):
     pid: str
     user_id: int
     text: str
+    title: Optional[str]
+    description: Optional[str]
+    image_url: Optional[str]
     date_created: datetime
 
     class Config:

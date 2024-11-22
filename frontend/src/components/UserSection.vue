@@ -13,13 +13,21 @@
             </div>
             <div class="user-info">
                 <h2>{{ user.name }}</h2>
-                <p>{{ time }}</p>
+                <!-- Automatically switch between relative and absolute time -->
+                <p>{{ formattedTime }}</p>
             </div>
         </div>
 
         <!-- Post Content Row -->
         <div class="content">
             <p v-html="content"></p>
+            <WebsiteEmbed 
+                v-if="embed && embed.title && (embed.description || embed.image_url)"
+                :title="embed.title"
+                :description="embed.description"
+                :image="embed.image_url"
+                :url="embed.url"
+            />
         </div>
 
         <!-- Actions Row -->
@@ -37,24 +45,46 @@
 </template>
 
 <script>
+import dayjs from "dayjs";
+import relativeTime from "dayjs/plugin/relativeTime";
+import utc from "dayjs/plugin/utc";
+import timezone from "dayjs/plugin/timezone";
+import WebsiteEmbed from './WebsiteEmbed.vue';
+
+// Extend Day.js with plugins
+dayjs.extend(relativeTime);
+dayjs.extend(utc);
+dayjs.extend(timezone);
+
 export default {
+    components: { WebsiteEmbed },
     props: {
-        user: {
+        user: Object,
+        content: String,
+        time: String,
+        embed: {
             type: Object,
-            required: true,
-        },
-        content: {
-            type: String,
-            required: true,
-        },
-        time: {
-            type: String,
-            required: true,
+            required: false,
+            default: null,
         },
         actions: {
             type: Array,
             default: () => ["comment", "retweet", "like"]
         }
+    },
+    computed: {
+        formattedTime() {
+            const now = dayjs();
+            const postTime = dayjs.utc(this.time).tz("Europe/Paris"); // Convert UTC to CET
+
+            // Show relative time if the timestamp is within the last 7 days
+            if (now.diff(postTime, "days") < 7) {
+                return postTime.fromNow(); // e.g., "2 hours ago"
+            }
+
+            // Show absolute time for older posts
+            return postTime.format("MMMM D, YYYY h:mm A"); // e.g., "November 21, 2024, 8:55 PM"
+        },
     },
     methods: {
         triggerAction(action) {
@@ -66,7 +96,6 @@ export default {
     }
 };
 </script>
-
 
 <style scoped>
 .user-section {
@@ -98,8 +127,8 @@ export default {
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: #ccc; /* Adjust as needed */
-  color: white; /* Adjust as needed */
+  background-color: #ccc;
+  color: white;
   font-size: 24px;
   font-weight: bold;
   text-transform: uppercase;

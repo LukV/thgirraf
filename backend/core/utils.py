@@ -1,5 +1,7 @@
 # utils.py
+from html import unescape
 import os
+import re
 from pathlib import Path
 from email.message import EmailMessage
 import smtplib
@@ -7,6 +9,7 @@ import logging
 import requests
 import ulid
 from dotenv import load_dotenv
+from bs4 import BeautifulSoup
 
 logger = logging.getLogger(__name__)
 path = Path(__file__).resolve().parent.parent
@@ -17,6 +20,58 @@ SES_SMTP_PORT = int(os.getenv("SES_SMTP_PORT", "587"))
 SES_SMTP_USERNAME = os.getenv("SES_SMTP_USERNAME")
 SES_SMTP_PASSWORD = os.getenv("SES_SMTP_PASSWORD")
 RESET_PASSWORD_URL = os.getenv("RESET_PASSWORD_URL")
+
+def extract_metadata(url: str) -> dict:
+    """
+    Extract Open Graph and Twitter metadata from the given URL.
+
+    Args:
+        url (str): The URL to scrape metadata from.
+
+    Returns:
+        dict: A dictionary containing 'title', 'description', and 'image_url'.
+    """
+    try:
+        response = requests.get(url, timeout=10)
+        response.raise_for_status()
+
+        soup = BeautifulSoup(response.text, 'html.parser')
+        metadata = {
+            "title": soup.find("meta", property="og:title") or \
+                soup.find("meta", property="twitter:title") or soup.find("title"),
+            "description": soup.find("meta", property="og:description") or \
+                soup.find("meta", property="twitter:description") ,
+            "image_url": soup.find("meta", property="og:image") or \
+                soup.find("meta", property="twitter:image") 
+        }
+
+        # Extract content from meta tags
+        metadata = {key: (tag.get("content") if tag else None) for key, tag in metadata.items()}
+        return metadata
+    except Exception as e:
+        # Log and return empty metadata on failure
+        logger.error("Failed to extract metadata for URL %s: %s", url, e)
+        return {"title": None, "description": None, "image_url": None}
+    
+def extract_url_from_text(text: str) -> str:
+    """
+    Extract the first URL from a given text.
+
+    Args:
+        text (str): The text to search for URLs.
+
+    Returns:
+        str: The first URL found or None if no URL is present.
+    """
+    href_pattern = r'href="([^"]+)"'
+    match = re.search(href_pattern, text)
+    if match:
+        return unescape(match.group(1))  # Unescape HTML entities if any
+    
+    # Fallback: Match plain URLs not wrapped in HTML
+    url_pattern = r"https?://[^\s<>\"']+"  # Match URLs outside of HTML tags
+    match = re.search(url_pattern, text)
+    return match.group(0) if match else None
 
 def send_reset_email(email: str, token: str):
     """Sends a password reset email to the specified recipient."""

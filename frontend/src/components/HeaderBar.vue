@@ -113,15 +113,15 @@ export default {
 
 .logo-title {
   font-family: FlandersArtSerif;
-  font-size: 28px;
   font-weight: bold;
-  line-height: 1em;
   margin: 15px;
   text-align: center;
 }
 
 .logo-title span {
   display: block;
+  font-size: 38px;
+  line-height: .9em ;
 }
 
 .header-right {

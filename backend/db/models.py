@@ -21,4 +21,7 @@ class Post(Base):
     pid = Column(String, unique=True, index=True, nullable=False)
     user_id = Column(Integer, nullable=False)
     text = Column(String, nullable=False)
+    title = Column(String, nullable=True)
+    description = Column(String, nullable=True)
+    image_url = Column(String, nullable=True)
     date_created = Column(DateTime(timezone=True), server_default=func.now()) # pylint: disable=E1102

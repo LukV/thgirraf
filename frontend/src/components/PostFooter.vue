@@ -2,8 +2,15 @@
   <footer class="post-footer">
     <div class="post-footer-container">
       <div class="post-input-area">
-        <textarea id="postInput" ref="postInput" placeholder="Create a post..." rows="2" v-model="postContent"
-          @focus="expandTextarea"></textarea>
+        <textarea
+          id="postInput"
+          ref="postInput"
+          placeholder="Create a post..."
+          rows="2"
+          v-model="postContent"
+          @input="handleInput"
+          @focus="expandTextarea"
+        ></textarea>
         <div class="icon-container">
           <div :class="[
             'post-type-icons',
@@ -42,6 +49,7 @@
 </template>
 
 <script>
+import MarkdownIt from "markdown-it";
 import apiClient from "@/apiClient";
 
 export default {
@@ -62,6 +70,22 @@ export default {
       this.showExtraFields = true;
       this.hidePostTypeIcons();
     },
+    parseMarkdown(content) {
+      const md = new MarkdownIt();
+      
+      // Add automatic URL linking
+      const urlRegex = /(https?:\/\/[^\s]+)/g;
+      const markdownContent = content.replace(urlRegex, (url) => {
+        const maxDisplayLength = 30; // Customize max length for display
+        const shortenedUrl =
+          url.length > maxDisplayLength
+            ? `${url.slice(0, maxDisplayLength)}...`
+            : url;
+        return `[${shortenedUrl}](${url})`; // Markdown link
+      });
+
+      return md.render(markdownContent);
+    },
     async submitPost() {
       if (!this.postContent.trim()) {
         alert("Post content cannot be empty.");
@@ -69,7 +93,7 @@ export default {
       }
 
       const postData = {
-        text: this.postContent,
+        text: this.parseMarkdown(this.postContent),
         type: this.selectedPostType || "text", // Default to "text" if no type is selected
       };
 
@@ -81,6 +105,7 @@ export default {
         this.postContent = "";
         this.selectedPostType = null;
         this.showExtraFields = false;
+        this.parsedContent = ""; // Reset Markdown preview
         this.$refs.postInput.rows = 2; // Reset textarea size
       } catch (error) {
         console.error("Error creating post:", error);
@@ -115,6 +140,21 @@ export default {
 </script>
 
 <style scoped>
+.markdown-preview {
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background-color: #f8f8f8;
+  font-size: 14px;
+  color: #333;
+}
+.markdown-preview a {
+  color: #5052c0;
+  text-decoration: none;
+}
+.markdown-preview a:hover {
+  text-decoration: underline;
+}
 .post-footer {
   border-top: 1px solid #ddd;
   padding: 10px 20px;
