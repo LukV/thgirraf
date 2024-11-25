@@ -80,7 +80,7 @@ nav a {
     margin: 0 1em;
     padding: 1.1em .5em;
     text-decoration: none;
-    color: black;
+    color: #2c3e50;
     font-weight: 600;
     position: relative;
 }

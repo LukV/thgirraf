@@ -6,7 +6,7 @@
       </div>
     </div>
     <div class="logo">
-      <img src="@/assets/images/logo.png" alt="Logo" />
+      <img src="@/assets/images/thgirraf-logo.png" alt="Logo" />
       <div class="logo-title">
         <span>The</span>
         <span>Standout</span>
@@ -97,6 +97,7 @@ export default {
   position: relative;
   padding: 0 20px;
   border-bottom: 1px solid #ddd;
+  background-color: rgb(236,236,235);
 }
 
 .logo {
@@ -108,13 +109,13 @@ export default {
 }
 
 .logo img {
-  height: 70px;
+  height: 110px;
 }
 
 .logo-title {
   font-family: FlandersArtSerif;
   font-weight: bold;
-  margin: 15px;
+  margin: 15px 0px 15px -5px;
   text-align: center;
 }
 
